@@ -1,0 +1,22 @@
+node_modules/
+dist/
+.env
+.DS_Store
+*.log
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+*.egg-info/
+
+# DeepTutor
+DeepTutor/.venv/
+DeepTutor/__pycache__/
+DeepTutor/*.pyc
+DeepTutor/.env
+DeepTutor/logs/
+DeepTutor/data/
+
+# Temp
+DeepTutor_temp/
