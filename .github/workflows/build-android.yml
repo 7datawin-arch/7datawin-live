@@ -1,0 +1,37 @@
+name: Build Android App (.aab)
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install & Build Frontend
+        run: |
+          cd app/frontend
+          npm install
+          npm run build
+
+      - name: Generate Android App Bundle (.aab)
+        uses: pwa-builder/pwabuilder-action@v1.0.1
+        with:
+          manifest-url: "https://7datawin-live.vercel.app/manifest.json"
+          output-dir: "android-build"
+
+      - name: Upload .aab file to GitHub Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: 7DataWin-Android-Bundle
+          path: android-build/
