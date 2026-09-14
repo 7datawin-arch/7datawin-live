@@ -1,4 +1,4 @@
-name: Build Android App (.aab)
+name: Build Android App (.aab & .apk)
 
 on:
   push:
@@ -30,8 +30,19 @@ jobs:
           manifest-url: "https://7datawin-live.vercel.app/manifest.json"
           output-dir: "android-build"
 
-      - name: Upload .aab file to GitHub Artifacts
+      - name: Download Bundletool & Generate Test APK
+        run: |
+          wget -q https://github.com/google/bundletool/releases/download/1.15.6/bundletool-all-1.15.6.jar -O bundletool.jar
+          AAB_FILE=$(find android-build -name "*.aab" | head -n 1)
+          if [ -n "$AAB_FILE" ]; then
+            java -jar bundletool.jar build-apks --bundle="$AAB_FILE" --output=7DataWin.apks --mode=universal
+            unzip 7DataWin.apks -d apks_out
+            cp apks_out/universal.apk android-build/7DataWin-Test.apk
+            echo "Successfully generated 7DataWin-Test.apk"
+          fi
+
+      - name: Upload .aab and .apk files to GitHub Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: 7DataWin-Android-Bundle
+          name: 7DataWin-Android-Files-APK-and-AAB
           path: android-build/
