@@ -26,5 +26,22 @@
       "sizes": "192x192 512x512",
       "type": "image/svg+xml"
     }
+  ],
+  "categories": ["education", "business", "utilities"],
+  "screenshots": [
+    {
+      "src": "/screenshot1.jpg",
+      "sizes": "1080x1920",
+      "type": "image/jpeg",
+      "form_factor": "narrow",
+      "label": "Iibso Data Internet-ka"
+    },
+    {
+      "src": "/screenshot2.jpg",
+      "sizes": "1080x1920",
+      "type": "image/jpeg",
+      "form_factor": "narrow",
+      "label": "Koorsooyin Bilaash Ah"
+    }
   ]
 }
