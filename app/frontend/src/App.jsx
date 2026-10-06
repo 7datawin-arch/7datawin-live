@@ -6,6 +6,7 @@ import BuyData from './pages/BuyData'
 import Pricing from './pages/Pricing'
 import Contact from './pages/Contact'
 import Courses from './pages/Courses'
+import DeleteAccount from './pages/DeleteAccount'
 export default function App() {
   return (
     <BrowserRouter>
@@ -18,6 +19,7 @@ export default function App() {
             <Route path="/pricing" element={<Pricing />} />
             <Route path="/courses" element={<Courses />} />
             <Route path="/contact" element={<Contact />} />
+            <Route path="/delete-account" element={<DeleteAccount />} />
           </Routes>
         </main>
         <Footer />
