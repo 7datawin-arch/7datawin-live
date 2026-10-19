@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { Smartphone, Mail, MapPin, Send } from 'lucide-react'
 
 export default function Footer() {
@@ -114,6 +115,16 @@ export default function Footer() {
               <span className="text-gray-500 group-hover:text-pink-400 font-bold text-xs transition-colors">♪</span>
             </a>
           </div>
+
+          {/* Legal Links */}
+          <nav className="flex items-center gap-4 text-xs" aria-label="Legal">
+            <Link to="/privacy-policy" className="text-gray-400 hover:text-emerald-400 transition-colors">
+              Privacy Policy
+            </Link>
+            <Link to="/delete-account" className="text-gray-400 hover:text-emerald-400 transition-colors">
+              Delete Account
+            </Link>
+          </nav>
 
           {/* Copyright */}
           <p className="text-gray-600 text-xs text-center">
