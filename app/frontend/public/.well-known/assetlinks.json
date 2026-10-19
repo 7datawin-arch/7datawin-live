@@ -3,9 +3,10 @@
     "relation": ["delegate_permission/common.handle_all_urls"],
     "target": {
       "namespace": "android_app",
-      "package_name": "com.datawin7.app",
+      "package_name": "com.sevendatawin.app",
       "sha256_cert_fingerprints": [
-        "10:10:10:10:10:10:10:10:10:10:10:10:10:10:10:10:10:10:10:10:10:10:10:10:10:10:10:10:10:10:10:10"
+        "73:9C:84:9C:50:5B:6B:94:28:8A:0E:1D:0E:DD:13:5C:3A:E8:0E:F2:31:E7:65:FD:F9:F6:33:62:4E:A5:FD:2F",
+        "EF:E1:4D:7D:AA:05:DC:8E:44:C5:E1:C5:95:4D:6C:AC:F6:E9:C9:FF:99:28:F6:50:27:C7:5A:A1:88:CA:0F:4D"
       ]
     }
   }
