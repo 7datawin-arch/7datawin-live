@@ -3,7 +3,7 @@ dist/
 .env
 .DS_Store
 *.log
-
+/node_modules
 # Python
 __pycache__/
 *.pyc
@@ -20,3 +20,12 @@ DeepTutor/data/
 
 # Temp
 DeepTutor_temp/
+
+# Environment files / secrets (keep the *.example templates)
+.env.*
+!.env.example*
+,env*
+*.jks
+*.keystore
+*.p12
+key.properties
