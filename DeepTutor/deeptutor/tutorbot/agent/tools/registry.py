@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
@@ -97,14 +98,16 @@ def build_base_tools(
     allowed_dir = workspace if restrict_to_workspace else None
     for cls in (ReadFileTool, WriteFileTool, EditFileTool, ListDirTool):
         tools.register(cls(workspace=workspace, allowed_dir=allowed_dir))
-    tools.register(
-        ExecTool(
-            working_dir=str(workspace),
-            timeout=exec_config.timeout,
-            restrict_to_workspace=restrict_to_workspace,
-            path_append=exec_config.path_append,
+    # Shell execution is off unless explicitly enabled by the operator.
+    if os.environ.get("TUTORBOT_ENABLE_EXEC", "").strip().lower() in ("1", "true", "yes"):
+        tools.register(
+            ExecTool(
+                working_dir=str(workspace),
+                timeout=exec_config.timeout,
+                restrict_to_workspace=restrict_to_workspace,
+                path_append=exec_config.path_append,
+            )
         )
-    )
     tools.register(WebSearchTool(config=web_search_config, proxy=web_proxy))
     tools.register(WebFetchTool(proxy=web_proxy))
     return tools

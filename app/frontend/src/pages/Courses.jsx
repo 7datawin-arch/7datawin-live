@@ -12,7 +12,6 @@ import {
   Briefcase,
   Languages,
   CheckCircle2,
-  Settings,
   X,
   Send,
   HelpCircle,
@@ -795,10 +794,6 @@ export default function Courses() {
   const [messages, setMessages] = useState([])
   const [chatInput, setChatInput] = useState('')
   
-  // Set default Gemini API Key from environment variable
-  const defaultApiKey = import.meta.env.VITE_GEMINI_API_KEY || ''
-  const [apiKey, setApiKey] = useState(localStorage.getItem('gemini_api_key') || defaultApiKey)
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   const [isGenerating, setIsGenerating] = useState(false)
   const [selectedLesson, setSelectedLesson] = useState(null)
 
@@ -823,13 +818,6 @@ export default function Courses() {
     }
     return null
   }
-
-  // Auto save default key in localStorage if not set
-  useEffect(() => {
-    if (!localStorage.getItem('gemini_api_key')) {
-      localStorage.setItem('gemini_api_key', defaultApiKey)
-    }
-  }, [])
 
   // Quiz active step
   const [quizStep, setQuizStep] = useState(0) // 0: initial screen, 1, 2, 3: active questions, 4: complete
@@ -935,12 +923,6 @@ export default function Courses() {
     }
   }
 
-  const handleSaveApiKey = (key) => {
-    localStorage.setItem('gemini_api_key', key)
-    setApiKey(key)
-    setIsSettingsOpen(false)
-  }
-
   const getSystemPromptForMode = (mode, course, tutor) => {
     const base = `Magacaagu waa Support Bot. Waxaad tahay kaaliyaha rasmiga ah ee 7DataWin. Waxaad cashar siinaysaa arday Soomaaliyeed oo baranaya koorsada "${course.title}". Ku hadal af Soomaali aad u fudud, saaxiibtinimo leh, oo dadka soo jiita, adoo isticmaalaya emojis iyo stickers xiiso geliya ardayga. Waxaad wax ugu sharaxeysaa habka ugu fudud ee cunug 5 jir ah u fahmi karo (ELI5 - Explain Like I'm 5). Isticmaal tusaale fudud oo Soomaali ah oo la xiriira nolosha caadiga ah (sida: HTML waa lafaha guriga, CSS waa ranjiga ama midabka guriga, JavaScript waa awooda uu gurigu albaabada ku furto, Server-kuna waa bakhaar, API-guna waa adeegaha cuntada kuu keenaya). Ka fogow erayada adag ee farsamada ah.`;
     
@@ -959,8 +941,7 @@ export default function Courses() {
     return base;
   }
 
-  const callGeminiAPI = async (keyInput, systemPrompt, userMessage, historyList = []) => {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${keyInput}`
+  const callGeminiAPI = async (systemPrompt, userMessage, historyList = []) => {
     
     const contents = historyList
       .filter(m => m.id !== 'welcome' && m.id !== 'mode-change')
@@ -979,13 +960,10 @@ export default function Courses() {
       systemInstruction: {
         parts: [{ text: systemPrompt }]
       },
-      generationConfig: {
-        temperature: 0.7,
-        maxOutputTokens: 800
-      }
+      maxOutputTokens: 800
     }
 
-    const response = await fetch(url, {
+    const response = await fetch('/api/chat', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -994,8 +972,10 @@ export default function Courses() {
     })
 
     if (!response.ok) {
-      const err = await response.json()
-      throw new Error(err.error?.message || 'Cilad ayaa dhacday wicitaanka Gemini API.')
+      const err = await response.json().catch(() => ({}))
+      const error = new Error(err.error || 'Cilad ayaa dhacday wicitaanka Gemini API.')
+      error.status = response.status
+      throw error
     }
 
     const data = await response.json()
@@ -1050,18 +1030,19 @@ export default function Courses() {
     setIsGenerating(true)
 
     try {
-      if (apiKey) {
-        const tutor = getTutorInfo(activeTutorCourse)
-        const systemPrompt = getSystemPromptForMode(currentMode, activeTutorCourse, tutor)
-        const reply = await callGeminiAPI(apiKey, systemPrompt, userMsg, messages)
-        setMessages(prev => [...prev, { id: Date.now().toString(), sender: 'assistant', text: reply }])
-      } else {
+      const tutor = getTutorInfo(activeTutorCourse)
+      const systemPrompt = getSystemPromptForMode(currentMode, activeTutorCourse, tutor)
+      let reply
+      try {
+        reply = await callGeminiAPI(systemPrompt, userMsg, messages)
+      } catch (apiErr) {
+        if (apiErr.status !== 503) throw apiErr
         await new Promise(resolve => setTimeout(resolve, 1200))
-        const reply = getSimulatedReply(currentMode, userMsg, activeTutorCourse)
-        setMessages(prev => [...prev, { id: Date.now().toString(), sender: 'assistant', text: reply }])
+        reply = getSimulatedReply(currentMode, userMsg, activeTutorCourse)
       }
+      setMessages(prev => [...prev, { id: Date.now().toString(), sender: 'assistant', text: reply }])
     } catch (err) {
-      setMessages(prev => [...prev, { id: Date.now().toString(), sender: 'assistant', text: `❌ Cilad ayaa dhacday: ${err.message}. Fadlan hubi API Key-gaaga.` }])
+      setMessages(prev => [...prev, { id: Date.now().toString(), sender: 'assistant', text: `❌ Cilad ayaa dhacday: ${err.message}. Fadlan mar kale isku day.` }])
     } finally {
       setIsGenerating(false)
     }
@@ -1368,62 +1349,8 @@ export default function Courses() {
               </div>
             </div>
 
-            {/* Bottom API Key config */}
+            {/* Bottom course link */}
             <div className="pt-4 border-t border-gray-800/60">
-              {isSettingsOpen ? (
-                <div className="bg-gray-950 border border-gray-800 rounded-2xl p-4 animate-fadeInUp">
-                  <div className="flex justify-between items-center mb-3">
-                    <span className="text-xs font-bold text-white flex items-center gap-1">
-                      <Settings className="w-3.5 h-3.5 text-emerald-400" /> API Settings
-                    </span>
-                    <button onClick={() => setIsSettingsOpen(false)} className="text-gray-500 hover:text-white">
-                      <X className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                  <input
-                    type="password"
-                    defaultValue={apiKey}
-                    placeholder="Geli Gemini API Key..."
-                    id="api-key-input"
-                    className="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-white placeholder-gray-600 focus:outline-none focus:border-emerald-500 text-xs mb-3 font-mono"
-                  />
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => {
-                        const val = document.getElementById('api-key-input')?.value || ''
-                        handleSaveApiKey(val)
-                      }}
-                      className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold py-2 rounded-lg transition"
-                    >
-                      Save Key
-                    </button>
-                    {apiKey && (
-                      <button
-                        onClick={() => {
-                          localStorage.removeItem('gemini_api_key')
-                          setApiKey('')
-                          setIsSettingsOpen(false)
-                        }}
-                        className="bg-red-500/20 hover:bg-red-500/30 text-red-400 text-xs px-2.5 rounded-lg transition"
-                      >
-                        Clear
-                      </button>
-                    )}
-                  </div>
-                </div>
-              ) : (
-                <button
-                  onClick={() => setIsSettingsOpen(true)}
-                  className="w-full flex items-center justify-between p-3.5 bg-gray-950/40 hover:bg-gray-850 border border-gray-800 rounded-xl text-gray-400 hover:text-white transition-colors"
-                >
-                  <span className="text-xs font-semibold flex items-center gap-2">
-                    <Settings className="w-4 h-4 text-emerald-400" />
-                    {apiKey ? '⚙️ Gemini Connected' : '⚙️ Connect Gemini Key'}
-                  </span>
-                  <span className={`w-2 h-2 rounded-full ${apiKey ? 'bg-emerald-400' : 'bg-yellow-400 animate-pulse'}`} />
-                </button>
-              )}
-              
               {/* Optional external course link */}
               {activeTutorCourse.link !== '#' && (
                 <a

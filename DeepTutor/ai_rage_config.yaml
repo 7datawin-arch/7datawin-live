@@ -5,7 +5,7 @@ tutorbot:
   # Enable the Telegram Channel
   telegram:
     enabled: true
-    token: "REMOVED_TELEGRAM_TOKEN"
+    token: "YOUR_TELEGRAM_BOT_TOKEN_HERE"  # example only; prefer TELEGRAM_BOT_TOKEN env var
     reply_to_message: true
 
   # Enable the Facebook Messenger Channel

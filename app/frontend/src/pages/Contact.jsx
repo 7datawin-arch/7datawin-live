@@ -20,12 +20,8 @@ export default function Contact() {
     '📞 Maxay tahay lambarkiina WhatsApp-ka?'
   ]
 
-  // Gemini API Key (from environment variable)
-  const defaultApiKey = import.meta.env.VITE_GEMINI_API_KEY || ''
-
   const callGeminiAPI = async (userMessage, historyList = []) => {
     const systemPrompt = `Magacaagu waa Support Bot. Waxaad tahay kaaliyaha rasmiga ah ee shabakadda 7DataWin. Ka caawi isticmaalayaasha wixii su'aalo ah oo ku saabsan iibsashada data-da, koorsooyinka AI, iyo buugaagta. U hadal si aad u fudud, saaxiibtinimo leh oo af Soomaali wacan ah. Markasta oo ay u baahdaan caawinaad manual ah, ama ay rabaan inay iibsadaan data/koorso, si toos ah ugu sheeg inay gujiyaan badhanka WhatsApp-ka ee Kenya (+254 799 636 342) ama link-ga weyn ee bidixda ku yaal. Had iyo jeer u sheeg lambarka WhatsApp-ka oo ah 0799636342.`
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${defaultApiKey}`
     
     const contents = historyList
       .filter(m => m.id !== 'welcome')
@@ -44,13 +40,10 @@ export default function Contact() {
       systemInstruction: {
         parts: [{ text: systemPrompt }]
       },
-      generationConfig: {
-        temperature: 0.7,
-        maxOutputTokens: 500
-      }
+      maxOutputTokens: 500
     }
 
-    const response = await fetch(url, {
+    const response = await fetch('/api/chat', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'

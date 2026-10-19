@@ -4,7 +4,9 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Code2, Copy, Check, ExternalLink, Maximize2, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Mermaid } from "@/components/Mermaid";
+import DOMPurify from "dompurify";
 import { prepareIframeHtml } from "@/lib/iframe-html";
+import { parseSafeLiteral } from "@/lib/safe-literal";
 import type { VisualizeResult } from "@/lib/visualize-types";
 
 function ChartJsRenderer({ config }: { config: string }) {
@@ -28,10 +30,10 @@ function ChartJsRenderer({ config }: { config: string }) {
           chartRef.current = null;
         }
 
-        // eslint-disable-next-line no-new-func
-        const parsedConfig = new Function(
-          `"use strict"; return (${config});`,
-        )();
+        // Data-only parse: LLM output must never be executed as code.
+        const parsedConfig = parseSafeLiteral(config) as ConstructorParameters<
+          typeof Chart
+        >[1];
 
         if (cancelled) return;
 
@@ -134,7 +136,12 @@ function SvgRenderer({ svg }: { svg: string }) {
       return "";
     }
     setError(null);
-    return trimmed;
+    // Strip scripts, event handlers and other active content from model output.
+    return DOMPurify.isSupported
+      ? DOMPurify.sanitize(trimmed, {
+          USE_PROFILES: { svg: true, svgFilters: true },
+        })
+      : "";
   }, [svg, t]);
 
   if (error) {

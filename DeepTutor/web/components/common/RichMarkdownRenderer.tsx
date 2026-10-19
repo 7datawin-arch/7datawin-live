@@ -7,6 +7,7 @@ import remarkGfm from "remark-gfm";
 import { useTranslation } from "react-i18next";
 import "katex/dist/katex.min.css";
 import { processMarkdownContent } from "@/lib/latex";
+import { buildSanitizeSchema } from "@/lib/markdown-sanitize";
 import {
   escapeUnknownHtmlTagsForDisplay,
   normalizeMarkdownForDisplay,
@@ -36,6 +37,7 @@ type PluginBundle = {
   remarkMath?: unknown;
   rehypeKatex?: unknown;
   rehypeRaw?: unknown;
+  rehypeSanitize?: unknown;
 };
 
 function extractText(children: React.ReactNode): string {
@@ -153,8 +155,15 @@ export default function RichMarkdownRenderer({
       }
 
       if (allowHtml) {
-        const rehypeRawModule = await import("rehype-raw");
+        const [rehypeRawModule, rehypeSanitizeModule] = await Promise.all([
+          import("rehype-raw"),
+          import("rehype-sanitize"),
+        ]);
         nextPlugins.rehypeRaw = rehypeRawModule.default;
+        nextPlugins.rehypeSanitize = [
+          rehypeSanitizeModule.default,
+          buildSanitizeSchema(rehypeSanitizeModule.defaultSchema),
+        ];
       }
 
       if (!cancelled) {
@@ -629,10 +638,15 @@ export default function RichMarkdownRenderer({
 
   const rehypePlugins = useMemo(() => {
     const p: Array<any> = [];
-    if (allowHtml && plugins.rehypeRaw) p.push(plugins.rehypeRaw as never);
+    // Raw HTML is only honoured after sanitising; KaTeX runs afterwards so its
+    // generated markup is not stripped.
+    if (allowHtml && plugins.rehypeRaw && plugins.rehypeSanitize) {
+      p.push(plugins.rehypeRaw as never);
+      p.push(plugins.rehypeSanitize as never);
+    }
     if (enableMath && plugins.rehypeKatex) p.push(plugins.rehypeKatex as never);
     return p;
-  }, [allowHtml, enableMath, plugins.rehypeRaw, plugins.rehypeKatex]);
+  }, [allowHtml, enableMath, plugins.rehypeRaw, plugins.rehypeSanitize, plugins.rehypeKatex]);
 
   return (
     <div className={`${rootClasses} ${className}`}>

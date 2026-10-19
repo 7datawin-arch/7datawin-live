@@ -185,12 +185,25 @@ def _ensure_essential_settings(path_service) -> None:
         bot_dir = path_service.project_root / "data" / "tutorbot" / "jilciyebot"
         bot_config_file = bot_dir / "config.yaml"
         
-        # Read the Telegram token from the environment variable (if set in .env),
-        # otherwise fallback to the user's hardcoded token for this specific deployment.
+        # The Telegram token and allowed users come only from the environment.
+        # Without a token the bot config is not created; without an allowlist the
+        # Telegram channel stays disabled (an empty allow_from aborts channel startup).
         telegram_token = os.environ.get("TELEGRAM_BOT_TOKEN")
         if not telegram_token:
-            telegram_token = "REMOVED_TELEGRAM_TOKEN"
-            
+            _get_setup_logger().warning(
+                "TELEGRAM_BOT_TOKEN is not set; skipping Telegram bot auto-configuration"
+            )
+            return
+        allowed_users = [
+            u.strip()
+            for u in os.environ.get("TELEGRAM_ALLOWED_USERS", "").split(",")
+            if u.strip() and u.strip() != "*"
+        ]
+        if not allowed_users:
+            _get_setup_logger().warning(
+                "TELEGRAM_ALLOWED_USERS is not set; the Telegram channel will be disabled"
+            )
+
         jilciyebot_config = {
             "auto_start": True,
             "name": "jilciyebot",
@@ -216,8 +229,8 @@ def _ensure_essential_settings(path_service) -> None:
                        "- Ku hadal af-Soomaali dhiirigelin leh, soona dhawee qofkasta adigoo u sharxaya faa'iidada tignoolajiyada.\n",
             "channels": {
                 "telegram": {
-                    "enabled": True,
-                    "allow_from": ["*"],
+                    "enabled": bool(allowed_users),
+                    "allow_from": allowed_users,
                     "reply_to_message": True,
                     "token": telegram_token
                 }

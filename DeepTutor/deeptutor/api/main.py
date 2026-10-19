@@ -1,5 +1,8 @@
 from contextlib import asynccontextmanager
+import hmac
 import logging
+import os
+from urllib.parse import parse_qs
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -42,6 +45,83 @@ class SafeOutputStaticFiles(StaticFiles):
         if not self._path_service.is_public_output_path(path):
             raise HTTPException(status_code=404, detail="Output not found")
         return await super().get_response(path, scope)
+
+
+class ApiKeyAuthMiddleware:
+    """Require a shared secret (API_AUTH_TOKEN) on every HTTP request and WebSocket.
+
+    Accepted as ``X-API-Key``, ``Authorization: Bearer <token>`` or, for WebSockets
+    (browsers cannot set headers), the ``api_key`` query parameter.
+    If API_AUTH_TOKEN is not configured, only loopback clients are allowed so a
+    remotely reachable server never runs open by accident.
+    """
+
+    _LOOPBACK = {"127.0.0.1", "::1", "localhost"}
+
+    def __init__(self, app):
+        self.app = app
+        self.token = os.environ.get("API_AUTH_TOKEN", "").strip()
+        if not self.token:
+            logger.warning(
+                "API_AUTH_TOKEN is not set: API access is limited to loopback clients"
+            )
+
+    def _authorized(self, scope) -> bool:
+        if not self.token:
+            client = scope.get("client")
+            return bool(client) and client[0] in self._LOOPBACK
+        headers = {k.decode("latin-1").lower(): v.decode("latin-1") for k, v in scope["headers"]}
+        supplied = headers.get("x-api-key", "")
+        auth = headers.get("authorization", "")
+        if not supplied and auth.lower().startswith("bearer "):
+            supplied = auth[7:].strip()
+        if not supplied and scope["type"] == "websocket":
+            supplied = parse_qs(scope.get("query_string", b"").decode("latin-1")).get(
+                "api_key", [""]
+            )[0]
+        return hmac.compare_digest(supplied.encode(), self.token.encode())
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] not in ("http", "websocket"):
+            return await self.app(scope, receive, send)
+        # CORS preflight and the bare health route carry no data.
+        if scope["type"] == "http" and (
+            scope["method"] == "OPTIONS" or scope["path"] == "/"
+        ):
+            return await self.app(scope, receive, send)
+        if self._authorized(scope):
+            return await self.app(scope, receive, send)
+
+        if scope["type"] == "websocket":
+            await receive()  # websocket.connect
+            await send({"type": "websocket.close", "code": 1008})
+            return
+        body = b'{"detail":"Unauthorized"}'
+        await send(
+            {
+                "type": "http.response.start",
+                "status": 401,
+                "headers": [
+                    (b"content-type", b"application/json"),
+                    (b"content-length", str(len(body)).encode()),
+                    (b"www-authenticate", b"Bearer"),
+                ],
+            }
+        )
+        await send({"type": "http.response.body", "body": body})
+
+
+def _cors_origins() -> list[str]:
+    """Browser origins allowed by CORS (CORS_ALLOWED_ORIGINS, comma separated)."""
+    configured = [
+        o.strip().rstrip("/")
+        for o in os.environ.get("CORS_ALLOWED_ORIGINS", "").split(",")
+        if o.strip() and o.strip() != "*"
+    ]
+    if configured:
+        return configured
+    port = os.environ.get("FRONTEND_PORT", "3782")
+    return [f"http://localhost:{port}", f"http://127.0.0.1:{port}"]
 
 
 def validate_tool_consistency():
@@ -165,10 +245,13 @@ async def selective_access_log(request, call_next):
     return response
 
 
-# Configure CORS
+# Auth is added first so CORS (added next) wraps it and also decorates 401 responses.
+app.add_middleware(ApiKeyAuthMiddleware)
+
+# Configure CORS (origins come from CORS_ALLOWED_ORIGINS)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production, replace with specific frontend origin
+    allow_origins=_cors_origins(),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
