@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { Link } from 'react-router-dom'
 
 const linkClass = 'text-emerald-400 underline break-all'
 
@@ -8,6 +9,18 @@ function Section({ title, children }) {
       <h2 className="text-xl font-semibold text-emerald-400 mb-3">{title}</h2>
       <div className="space-y-3 text-gray-300 leading-relaxed">{children}</div>
     </section>
+  )
+}
+
+function List({ children }) {
+  return <ul className="list-disc pl-5 space-y-2">{children}</ul>
+}
+
+function ExternalLink({ href, children }) {
+  return (
+    <a href={href} target="_blank" rel="noopener noreferrer" className={linkClass}>
+      {children}
+    </a>
   )
 }
 
@@ -33,82 +46,148 @@ export default function PrivacyPolicy() {
 
         <Section title="1. Introduction">
           <p>
-            Welcome to 7DataWin. We are committed to protecting your privacy and personal information. This Privacy Policy explains how we collect, use, store, and protect information when you use our mobile application and related services.
+            This Privacy Policy explains what information the 7DataWin app and website (https://7datawin.com) handle, where that information goes, and the choices you have.
           </p>
           <p>7DataWin provides internet data purchasing services and free educational courses.</p>
+          <p>
+            You can use 7DataWin without creating an account. The app does not have sign-up or login, and it does not use analytics or advertising tools.
+          </p>
         </Section>
 
         <Section title="2. Information We Collect">
+          <p>The app only handles the following information:</p>
+          <List>
+            <li>
+              <strong>Phone numbers for data orders.</strong> On the Buy Data page you enter the phone number you pay from and the phone number that should receive the data. These numbers stay in the app on your device. They are sent to us only if you choose to send your order through WhatsApp (see section 4).
+            </li>
+            <li>
+              <strong>AI chat messages.</strong> When you use the AI support chat on the Contact page, or the AI tutor on the Courses page with your own Gemini API key, your message and the earlier messages in that chat are sent to Google&apos;s Gemini API to generate a reply (see section 7).
+            </li>
+            <li>
+              <strong>IP address.</strong> When the home page loads, your device contacts ipapi.co, which uses your IP address to tell the app which country you are in. The app uses only the country to show the right banner and does not save it.
+            </li>
+            <li>
+              <strong>Messages you send us.</strong> If you contact us by WhatsApp, email, or phone, we receive your phone number or email address and the content of your message.
+            </li>
+            <li>
+              <strong>Information stored on your device.</strong> If you enter your own Gemini API key on the Courses page, it is saved only in your device&apos;s browser storage. The app also saves its own files (such as the home page, icons, and app settings file) on your device so it loads faster.
+            </li>
+          </List>
           <p>
-            Depending on how you use our services, we may collect your name, email address, phone number, account information, transaction details, technical diagnostic information, and customer support communications.
+            We do not ask for your name, precise location, contacts, photos, or payment card details. The app itself does not set cookies. Embedded YouTube and Loom course videos may use their own cookies under their own policies.
           </p>
-          <p>We aim to collect only the information necessary to provide and improve our services.</p>
         </Section>
 
         <Section title="3. How We Use Your Information">
-          <p>We may use your information to:</p>
-          <ul className="list-disc list-inside space-y-1 ml-2">
-            <li>Create and manage user accounts.</li>
-            <li>Process internet data purchases.</li>
-            <li>Deliver data packages through relevant providers.</li>
-            <li>Provide access to free educational courses.</li>
-            <li>Respond to customer support requests.</li>
-            <li>Maintain security and improve app performance.</li>
-            <li>Comply with applicable laws.</li>
-          </ul>
+          <p>We use the information described above only to:</p>
+          <List>
+            <li>Receive and deliver your internet data orders.</li>
+            <li>Show the home page banner for the country you are in.</li>
+            <li>Answer your questions through the AI chat.</li>
+            <li>Respond to your support requests.</li>
+          </List>
         </Section>
 
         <Section title="4. Payments and Third-Party Providers">
           <p>
-            7DataWin may work with payment providers, telecommunications companies, and internet data suppliers to process purchases and deliver services. These providers may process information necessary to complete transactions under their applicable privacy policies.
+            The app does not process payments. It does not collect or store card numbers, bank details, mobile money PINs, or account passwords.
+          </p>
+          <p>
+            The Buy Data page shows our merchant number and dialing instructions for mobile money services: EVC Plus, ZAAD Service, Amtel Pay, Sahal Service, Telebirr, M-PESA, M-PESA Kenya, Airtel Money, T-Kash, D-Money, eDahab, and Evatis Pay. You make the payment yourself with your mobile money provider, outside the app, under that provider&apos;s terms and privacy policy.
+          </p>
+          <p>
+            After you confirm an order, you can tap a button that opens WhatsApp with a message to our WhatsApp number (+254 799 636 342). The message contains the phone number you paid from and the phone number to receive the data. Nothing is sent until you press send in WhatsApp. Messages sent through WhatsApp are handled under the{' '}
+            <ExternalLink href="https://www.whatsapp.com/legal/privacy-policy">WhatsApp Privacy Policy</ExternalLink>.
           </p>
         </Section>
 
         <Section title="5. Sharing of Information">
-          <p>
-            We do not sell users’ personal information. We may share necessary information with trusted service providers to operate our services, process transactions, provide technical support, or comply with legal obligations.
-          </p>
+          <p>We do not sell personal information.</p>
+          <p>Information is shared only in these cases:</p>
+          <List>
+            <li>AI chat messages are sent to Google (Gemini API) to generate replies.</li>
+            <li>Your IP address is received by ipapi.co to detect your country.</li>
+            <li>Order and support messages you choose to send through WhatsApp are delivered by WhatsApp.</li>
+            <li>Course videos are played from YouTube and Loom, which receive standard connection information from your device when a video loads.</li>
+            <li>Our website is hosted by Vercel, which receives standard connection information (such as IP address and browser type) to deliver the pages.</li>
+          </List>
         </Section>
 
         <Section title="6. Data Security and Retention">
+          <p>All connections to https://7datawin.com use encrypted HTTPS.</p>
           <p>
-            We take reasonable measures to protect personal information against unauthorized access, loss, misuse, or disclosure. We retain information only for as long as reasonably necessary for our services, legal obligations, and legitimate business purposes.
+            The app does not keep your information on our own servers. Phone numbers you type on the Buy Data page are kept only in the app's memory on your device and are cleared when you leave the Buy Data page or close the app.
+          </p>
+          <p>
+            Order and support messages you send us by WhatsApp or email are kept in our WhatsApp and email accounts. Information handled by the third parties in section 7 is kept according to their own policies.
           </p>
         </Section>
 
         <Section title="7. Third-Party Services">
-          <p>
-            Our app may use third-party services for hosting, authentication, payments, analytics, or technical support.
-          </p>
+          <p>The app uses these third-party services:</p>
+          <List>
+            <li>
+              <strong>Google Gemini API</strong> (AI chat replies):{' '}
+              <ExternalLink href="https://policies.google.com/privacy">Google Privacy Policy</ExternalLink>
+            </li>
+            <li>
+              <strong>ipapi.co</strong> (country detection from IP address):{' '}
+              <ExternalLink href="https://ipapi.co/privacy/">ipapi.co Privacy Policy</ExternalLink>
+            </li>
+            <li>
+              <strong>WhatsApp</strong> (orders and support messages):{' '}
+              <ExternalLink href="https://www.whatsapp.com/legal/privacy-policy">WhatsApp Privacy Policy</ExternalLink>
+            </li>
+            <li>
+              <strong>YouTube</strong> (course videos):{' '}
+              <ExternalLink href="https://policies.google.com/privacy">Google Privacy Policy</ExternalLink>
+            </li>
+            <li>
+              <strong>Loom</strong> (course videos):{' '}
+              <ExternalLink href="https://www.atlassian.com/legal/privacy-policy">Atlassian Privacy Policy</ExternalLink>
+            </li>
+            <li>
+              <strong>Vercel</strong> (website hosting):{' '}
+              <ExternalLink href="https://vercel.com/legal/privacy-notice">Vercel Privacy Notice</ExternalLink>
+            </li>
+          </List>
+          <p>The app also links to our Facebook, TikTok, Telegram, and WhatsApp community pages. Those services apply their own privacy policies when you open them.</p>
         </Section>
 
         <Section title="8. Children's Privacy">
           <p>
-            We do not knowingly collect children's personal information in violation of applicable law. If you believe a child has provided personal information inappropriately, please contact us.
+            We do not knowingly collect personal information from children. If you believe a child has sent us personal information, please contact us using the details in section 13.
           </p>
         </Section>
 
         <Section title="9. Your Privacy Rights">
-          <p>
-            Depending on applicable law, you may request access to, correction of, or deletion of your personal information. You may also have other privacy rights under the laws applicable to you.
-          </p>
+          <p>You can:</p>
+          <List>
+            <li>Use the app without creating an account.</li>
+            <li>Choose not to use the AI chat or not to send your order through WhatsApp.</li>
+            <li>Remove your saved Gemini API key on the Courses page, or clear the app&apos;s data in your device or browser settings.</li>
+            <li>Ask us to access, correct, or delete messages and information you have sent us, by contacting us using the details in section 13.</li>
+          </List>
         </Section>
 
         <Section title="10. Account Deletion">
           <p>
-            Users may request account deletion and deletion of associated personal information through the account-deletion process provided by 7DataWin, subject to applicable legal requirements.
+            7DataWin does not have user accounts, so there is no account to delete. To request deletion of order or support messages you have sent us, follow the steps on our{' '}
+            <Link to="/delete-account" className={linkClass}>Delete Account page</Link>{' '}
+            or email{' '}
+            <a href="mailto:7datawin@gmail.com" className={linkClass}>7datawin@gmail.com</a>.
           </p>
         </Section>
 
         <Section title="11. International Users">
           <p>
-            7DataWin may serve users in Somalia, Kenya, Ethiopia, Uganda, Djibouti, and other countries. Where information is processed internationally, we will take appropriate steps to comply with applicable privacy requirements.
+            7DataWin may serve users in Somalia, Kenya, Ethiopia, Uganda, Djibouti and other countries. The third-party services listed in section 7 may process information in countries other than your own.
           </p>
         </Section>
 
         <Section title="12. Changes to This Policy">
           <p>
-            We may update this Privacy Policy when our services or legal requirements change. The latest version will be published on our official website.
+            We may update this Privacy Policy when the app or our services change. The latest version will always be published at https://7datawin.com/privacy-policy with its effective date at the top.
           </p>
         </Section>
 

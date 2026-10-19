@@ -23,8 +23,8 @@ export default function DeleteAccount() {
           <ul className="list-disc list-inside space-y-2 text-gray-300 ml-4">
             <li>
               <strong>Email toos ah:</strong> Noo soo dir email ku socda{' '}
-              <a href="mailto:suxufi34@gmail.com" className="text-emerald-400 underline">
-                suxufi34@gmail.com
+              <a href="mailto:7datawin@gmail.com" className="text-emerald-400 underline">
+                7datawin@gmail.com
               </a>{' '}
               adigoo cinwaanka (Subject) uga dhigaya: <em>"Request Account Deletion - 7DataWin"</em>. Fadlan ku soo dar lambarkaaga taleefanka ama email-ka aad ku diiwaangashatay.
             </li>
